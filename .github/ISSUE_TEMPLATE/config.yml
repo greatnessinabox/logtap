@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Questions & Discussions
+    url: https://github.com/greatnessinabox/logtap/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 🔒 Security Vulnerabilities
+    url: https://github.com/greatnessinabox/logtap/security/advisories/new
+    about: Report security issues privately (do not open a public issue)

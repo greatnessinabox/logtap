@@ -1,0 +1,76 @@
+{
+  "name": "LogTap Console Formatter",
+  "description": "Universal console debugging platform with intelligent filtering, persistence, semantic search, and anomaly detection.",
+  "version": "3.0.0",
+  "manifest_version": 3,
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "clipboardWrite",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "LogTap - Open DevTools for full panel",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "devtools_page": "devtools.html",
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "injected.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "commands": {
+    "toggle-capture": {
+      "suggested_key": {
+        "default": "Alt+Shift+L"
+      },
+      "description": "Toggle log capture on/off"
+    },
+    "clear-logs": {
+      "suggested_key": {
+        "default": "Alt+Shift+C"
+      },
+      "description": "Clear all captured logs"
+    },
+    "copy-logs": {
+      "suggested_key": {
+        "default": "Alt+Shift+X"
+      },
+      "description": "Copy logs to clipboard"
+    }
+  }
+}

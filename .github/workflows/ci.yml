@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint & Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate manifest.json
+        run: |
+          node -e "
+            const fs = require('fs');
+            const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+            console.log('✓ manifest.json is valid JSON');
+            console.log('  Name:', manifest.name);
+            console.log('  Version:', manifest.version);
+            console.log('  Manifest Version:', manifest.manifest_version);
+            if (manifest.manifest_version !== 3) {
+              console.error('✗ Expected Manifest V3');
+              process.exit(1);
+            }
+            console.log('✓ Manifest V3 confirmed');
+          "
+
+      - name: Check required files exist
+        run: |
+          files=("manifest.json" "background.js" "content.js" "injected.js" "panel.js" "panel.html" "panel.css")
+          for file in "${files[@]}"; do
+            if [ -f "$file" ]; then
+              echo "✓ $file exists"
+            else
+              echo "✗ $file missing"
+              exit 1
+            fi
+          done
+
+      - name: Check icons exist
+        run: |
+          for size in 16 32 48 128; do
+            if [ -f "icons/icon${size}.png" ]; then
+              echo "✓ icon${size}.png exists"
+            else
+              echo "✗ icon${size}.png missing"
+              exit 1
+            fi
+          done
+
+      - name: Lint JavaScript (syntax check)
+        run: |
+          for file in *.js lib/*.js; do
+            node --check "$file" && echo "✓ $file syntax OK"
+          done

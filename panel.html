@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LogTap 3.0</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="panel.css">
+</head>
+<body>
+  <div class="logtap-container">
+    <!-- Header -->
+    <header class="logtap-header">
+      <div class="header-left">
+        <h1 class="logo">
+          <span class="logo-icon">&#x1F4CB;</span>
+          LogTap
+          <span class="version">3.0</span>
+        </h1>
+        <span id="statusBadge" class="status-badge status-active">Capturing</span>
+      </div>
+      <div class="header-right">
+        <button id="btnToggleCapture" class="btn btn-icon" title="Toggle capture (Ctrl+Shift+C)">
+          <span class="icon">&#x23F8;</span>
+        </button>
+        <button id="btnClear" class="btn btn-icon" title="Clear logs (Ctrl+Shift+X)">
+          <span class="icon">&#x1F5D1;</span>
+        </button>
+        <button id="btnCopy" class="btn btn-primary" title="Copy to clipboard (Ctrl+Shift+V)">
+          <span class="icon">&#x1F4CB;</span>
+          Copy
+        </button>
+        <button id="btnExport" class="btn btn-icon" title="Export logs">
+          <span class="icon">&#x1F4E4;</span>
+        </button>
+        <button id="btnImport" class="btn btn-icon" title="Import logs">
+          <span class="icon">&#x1F4E5;</span>
+        </button>
+        <input type="file" id="importFile" accept=".logtap,.json" style="display:none">
+      </div>
+    </header>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+      <div class="search-input-wrapper">
+        <span class="search-icon">&#x1F50D;</span>
+        <input type="text" id="searchInput" class="search-input"
+               placeholder="Search logs... (try: 'errors from last 5 minutes' or '/regex/')">
+        <button id="btnClearSearch" class="btn-clear-search" title="Clear search">&#x2715;</button>
+      </div>
+      <div id="searchHint" class="search-hint"></div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-group levels">
+        <button id="lvlInfo" class="filter-btn level-info active" data-level="info">
+          <span class="level-dot"></span>
+          Info
+          <span class="count" id="countInfo">0</span>
+        </button>
+        <button id="lvlWarn" class="filter-btn level-warn active" data-level="warn">
+          <span class="level-dot"></span>
+          Warn
+          <span class="count" id="countWarn">0</span>
+        </button>
+        <button id="lvlError" class="filter-btn level-error active" data-level="error">
+          <span class="level-dot"></span>
+          Error
+          <span class="count" id="countError">0</span>
+        </button>
+        <button id="lvlDebug" class="filter-btn level-debug active" data-level="debug">
+          <span class="level-dot"></span>
+          Debug
+          <span class="count" id="countDebug">0</span>
+        </button>
+      </div>
+      <div class="filter-group tags">
+        <div class="tags-dropdown">
+          <button id="btnTags" class="filter-btn tags-btn">
+            <span class="icon">&#x1F3F7;</span>
+            Tags
+            <span class="count" id="countTags">All</span>
+            <span class="dropdown-arrow">&#x25BC;</span>
+          </button>
+          <div id="tagsDropdown" class="tags-menu">
+            <div class="tags-header">
+              <input type="text" id="tagsSearch" class="tags-search-input" placeholder="Filter tags...">
+              <button id="tagsSelectAll" class="tags-action">All</button>
+              <button id="tagsSelectNone" class="tags-action">None</button>
+            </div>
+            <div id="tagsList" class="tags-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="filter-group options">
+        <button id="btnDedupe" class="filter-btn" title="Collapse repeated logs">
+          <span class="icon">&#x1F501;</span>
+          Dedupe
+        </button>
+        <button id="btnGroup" class="filter-btn" title="Group by request/trace">
+          <span class="icon">&#x2194;</span>
+          Group
+        </button>
+        <button id="btnPatterns" class="filter-btn" title="Show detected patterns">
+          <span class="icon">&#x1F4CA;</span>
+          Patterns
+        </button>
+        <button id="btnDiff" class="filter-btn" title="Compare sessions">
+          <span class="icon">&#x2194;</span>
+          Diff
+        </button>
+        <button id="btnSettings" class="filter-btn" title="Output settings">
+          <span class="icon">&#x2699;</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline-container">
+      <div id="timeline" class="timeline">
+        <canvas id="timelineCanvas" class="timeline-canvas"></canvas>
+        <div id="timelineSelection" class="timeline-selection"></div>
+      </div>
+      <div class="timeline-labels">
+        <span id="timelineStart" class="timeline-label">--:--</span>
+        <span id="timelineEnd" class="timeline-label">--:--</span>
+      </div>
+    </div>
+
+    <!-- Log List -->
+    <div class="logs-container">
+      <div id="logsList" class="logs-list">
+        <div class="logs-empty">
+          <div class="empty-icon">&#x1F4DD;</div>
+          <div class="empty-title">No logs captured yet</div>
+          <div class="empty-subtitle">Console output will appear here as you browse</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <footer class="status-bar">
+      <div class="status-left">
+        <span id="statTotal" class="stat-item">
+          <span class="stat-label">Total:</span>
+          <span class="stat-value">0</span>
+        </span>
+        <span id="statFiltered" class="stat-item">
+          <span class="stat-label">Shown:</span>
+          <span class="stat-value">0</span>
+        </span>
+        <span id="statSession" class="stat-item">
+          <span class="stat-label">Session:</span>
+          <span class="stat-value">--</span>
+        </span>
+      </div>
+      <div class="status-right">
+        <span id="anomalyIndicator" class="anomaly-indicator" style="display:none">
+          <span class="anomaly-icon">&#x26A0;</span>
+          <span class="anomaly-text">Anomaly detected</span>
+        </span>
+        <span id="persistenceStatus" class="persistence-status">
+          <span class="icon">&#x1F4BE;</span>
+          <span class="text">Persistent</span>
+        </span>
+      </div>
+    </footer>
+
+    <!-- Settings Panel (hidden by default) -->
+    <div id="settingsPanel" class="settings-panel" style="display:none">
+      <div class="settings-header">
+        <h3>Output Settings</h3>
+        <button id="btnCloseSettings" class="btn-close">&#x2715;</button>
+      </div>
+      <div class="settings-content">
+        <div class="settings-group">
+          <label class="settings-label">Output Format</label>
+          <select id="outputFormat" class="settings-select">
+            <option value="plain">Plain Text</option>
+            <option value="markdown" selected>Markdown</option>
+            <option value="json">JSON</option>
+            <option value="csv">CSV</option>
+          </select>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Options</label>
+          <div class="settings-checkboxes">
+            <label class="checkbox-item">
+              <input type="checkbox" id="optShowTimestamps" checked>
+              <span>Show timestamps</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="optShowFiles">
+              <span>Show file references</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="optShowTags" checked>
+              <span>Show tags</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="optShowEmoji" checked>
+              <span>Show level emoji</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="optLineNumbers">
+              <span>Line numbers</span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Max Lines (0 = unlimited)</label>
+          <input type="number" id="maxLines" class="settings-input" value="500" min="0">
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Export Options</label>
+          <div class="settings-checkboxes">
+            <label class="checkbox-item">
+              <input type="checkbox" id="optAnonymize">
+              <span>Anonymize sensitive data</span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Editor for File Links</label>
+          <select id="editorSelect" class="settings-select">
+            <option value="vscode">VS Code</option>
+            <option value="cursor">Cursor</option>
+            <option value="webstorm">WebStorm</option>
+            <option value="idea">IntelliJ IDEA</option>
+            <option value="sublime">Sublime Text</option>
+          </select>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Workspace Root (for file links)</label>
+          <input type="text" id="workspaceRoot" class="settings-input" placeholder="/path/to/your/project">
+        </div>
+      </div>
+    </div>
+
+    <!-- Log Detail Panel (hidden by default) -->
+    <div id="detailPanel" class="detail-panel" style="display:none">
+      <div class="detail-header">
+        <h3>Log Details</h3>
+        <button id="btnCloseDetail" class="btn-close">&#x2715;</button>
+      </div>
+      <div class="detail-content">
+        <div class="detail-meta">
+          <span id="detailTime" class="detail-time"></span>
+          <span id="detailLevel" class="detail-level"></span>
+          <span id="detailFile" class="detail-file clickable" title="Click to open in editor"></span>
+        </div>
+        <div id="detailMessage" class="detail-message"></div>
+        <div id="detailSnapshot" class="detail-snapshot"></div>
+        <div id="detailStack" class="detail-stack"></div>
+        <div id="detailContext" class="detail-context">
+          <h4>Context</h4>
+          <div id="contextEvents" class="context-events"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Patterns Panel (hidden by default) -->
+    <div id="patternsPanel" class="patterns-panel" style="display:none">
+      <div class="patterns-header">
+        <h3>Detected Patterns</h3>
+        <button id="btnClosePatterns" class="btn-close">&#x2715;</button>
+      </div>
+      <div id="patternsList" class="patterns-list">
+        <div class="patterns-empty">No patterns detected yet. Patterns are learned from your log history.</div>
+      </div>
+    </div>
+
+    <!-- Diff Panel (hidden by default) -->
+    <div id="diffPanel" class="diff-panel" style="display:none">
+      <div class="diff-header">
+        <h3>Compare Sessions</h3>
+        <button id="btnCloseDiff" class="btn-close">&#x2715;</button>
+      </div>
+      <div class="diff-content">
+        <div class="diff-sessions">
+          <div class="diff-session">
+            <label>Session A (baseline)</label>
+            <select id="diffSessionA" class="settings-select">
+              <option value="current">Current Session</option>
+            </select>
+            <input type="file" id="diffFileA" accept=".logtap,.json" style="display:none">
+            <button id="btnLoadFileA" class="btn btn-small">Load File</button>
+          </div>
+          <div class="diff-session">
+            <label>Session B (compare)</label>
+            <select id="diffSessionB" class="settings-select">
+              <option value="current">Current Session</option>
+            </select>
+            <input type="file" id="diffFileB" accept=".logtap,.json" style="display:none">
+            <button id="btnLoadFileB" class="btn btn-small">Load File</button>
+          </div>
+        </div>
+        <button id="btnRunDiff" class="btn btn-primary">Compare</button>
+        <div id="diffResults" class="diff-results"></div>
+      </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast" style="display:none">
+      <span id="toastIcon" class="toast-icon"></span>
+      <span id="toastMessage" class="toast-message"></span>
+    </div>
+  </div>
+
+  <script src="panel.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+# Labeler configuration for automatic PR labeling
+# Used by the labeler workflow
+
+# Documentation changes
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "**/*.md"
+
+# UI changes
+ui:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "panel.html"
+          - "panel.css"
+          - "panel.js"
+
+# Core functionality
+core:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "lib/**"
+          - "injected.js"
+          - "content.js"
+          - "background.js"
+
+# DevTools integration
+devtools:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "devtools.html"
+          - "devtools.js"
+
+# CI/CD changes
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**"
+
+# Manifest/config
+config:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "manifest.json"
+
+# Icons/assets
+assets:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "icons/**"

@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build & Package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Verify manifest version matches tag
+        run: |
+          MANIFEST_VERSION=$(node -p "require('./manifest.json').version")
+          TAG_VERSION="${{ steps.version.outputs.VERSION }}"
+          if [ "$MANIFEST_VERSION" != "$TAG_VERSION" ]; then
+            echo "✗ Version mismatch: manifest.json ($MANIFEST_VERSION) != tag ($TAG_VERSION)"
+            exit 1
+          fi
+          echo "✓ Version $MANIFEST_VERSION matches tag"
+
+      - name: Create extension package
+        run: |
+          zip -r logtap-${{ steps.version.outputs.VERSION }}.zip . \
+            -x "*.git*" \
+            -x "*.DS_Store" \
+            -x "store/*" \
+            -x "RELEASE_CHECKLIST.md" \
+            -x "icons/generate-icons.html" \
+            -x "icons/*.svg"
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: logtap-${{ steps.version.outputs.VERSION }}
+          path: logtap-${{ steps.version.outputs.VERSION }}.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: logtap-${{ steps.version.outputs.VERSION }}.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
