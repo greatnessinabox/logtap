@@ -13,7 +13,7 @@ jobs:
     name: Build & Package
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Get version from tag
         id: version
@@ -40,13 +40,13 @@ jobs:
             -x "icons/*.svg"
 
       - name: Upload release artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: logtap-${{ steps.version.outputs.VERSION }}
           path: logtap-${{ steps.version.outputs.VERSION }}.zip
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: logtap-${{ steps.version.outputs.VERSION }}.zip
           generate_release_notes: true
