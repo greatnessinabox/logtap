@@ -4,6 +4,10 @@
  * Handles IndexedDB persistence and cross-tab communication
  */
 
+// Silent logger - prevents extension debug output from polluting error pages
+const DEBUG = false;
+const log = DEBUG ? console.debug.bind(console, '[LogTap]') : () => {};
+
 // Inject the console interceptor
 const hookSrc = chrome.runtime.getURL('injected.js');
 const s = document.createElement('script');
@@ -31,45 +35,60 @@ const BATCH_SIZE = 50;
 const BATCH_DELAY = 100;
 
 // ============ IndexedDB Setup ============
+const DB_TIMEOUT = 3000;
+
 async function initDB() {
   if (db) return db;
 
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+  const dbPromise = new Promise((resolve) => {
+    try {
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onerror = () => {
-      console.debug('[LogTap] IndexedDB not available, using memory only');
+      request.onerror = () => {
+        log('IndexedDB not available, using memory only');
+        resolve(null);
+      };
+
+      request.onsuccess = () => {
+        db = request.result;
+        resolve(db);
+      };
+
+      request.onupgradeneeded = (event) => {
+        const database = event.target.result;
+
+        if (!database.objectStoreNames.contains('logs')) {
+          const logsStore = database.createObjectStore('logs', {
+            keyPath: 'id',
+            autoIncrement: true
+          });
+          logsStore.createIndex('timestamp', 'timestamp', { unique: false });
+          logsStore.createIndex('sessionId', 'sessionId', { unique: false });
+          logsStore.createIndex('level', 'level', { unique: false });
+          logsStore.createIndex('tag', 'tag', { unique: false });
+          logsStore.createIndex('tabId', 'tabId', { unique: false });
+          logsStore.createIndex('session_time', ['sessionId', 'timestamp'], { unique: false });
+        }
+
+        if (!database.objectStoreNames.contains('sessions')) {
+          const sessionsStore = database.createObjectStore('sessions', { keyPath: 'id' });
+          sessionsStore.createIndex('created', 'created', { unique: false });
+          sessionsStore.createIndex('url', 'url', { unique: false });
+        }
+      };
+    } catch {
       resolve(null);
-    };
-
-    request.onsuccess = () => {
-      db = request.result;
-      resolve(db);
-    };
-
-    request.onupgradeneeded = (event) => {
-      const database = event.target.result;
-
-      if (!database.objectStoreNames.contains('logs')) {
-        const logsStore = database.createObjectStore('logs', {
-          keyPath: 'id',
-          autoIncrement: true
-        });
-        logsStore.createIndex('timestamp', 'timestamp', { unique: false });
-        logsStore.createIndex('sessionId', 'sessionId', { unique: false });
-        logsStore.createIndex('level', 'level', { unique: false });
-        logsStore.createIndex('tag', 'tag', { unique: false });
-        logsStore.createIndex('tabId', 'tabId', { unique: false });
-        logsStore.createIndex('session_time', ['sessionId', 'timestamp'], { unique: false });
-      }
-
-      if (!database.objectStoreNames.contains('sessions')) {
-        const sessionsStore = database.createObjectStore('sessions', { keyPath: 'id' });
-        sessionsStore.createIndex('created', 'created', { unique: false });
-        sessionsStore.createIndex('url', 'url', { unique: false });
-      }
-    };
+    }
   });
+
+  // Race against timeout to prevent hanging
+  return Promise.race([
+    dbPromise,
+    new Promise((resolve) => setTimeout(() => {
+      log('IndexedDB init timed out, using memory only');
+      resolve(null);
+    }, DB_TIMEOUT))
+  ]);
 }
 
 // ============ Session Management ============
@@ -160,7 +179,7 @@ function flushLogs() {
       updateSessionLogCount(buffer.length);
     };
   } catch (e) {
-    console.debug('[LogTap] Failed to persist logs:', e);
+    log('Failed to persist logs:', e);
     // Re-queue failed writes
     writeQueue.unshift(...batch);
   }
@@ -261,7 +280,7 @@ window.addEventListener('message', e => {
   }
 
   if (msg.type === 'LOGTAP_READY') {
-    console.debug('[LogTap] Injected script ready:', msg.payload);
+    log('Injected script ready:', msg.payload);
   }
 });
 
@@ -595,7 +614,7 @@ async function cleanupOldLogs() {
       }
     };
   } catch (e) {
-    console.debug('[LogTap] Cleanup failed:', e);
+    log('Cleanup failed:', e);
   }
 }
 

@@ -3,6 +3,10 @@
  * Handles context menu, tab management, and cross-tab coordination
  */
 
+// Silent logger - prevents extension debug output from polluting error pages
+const DEBUG = false;
+const log = DEBUG ? console.debug.bind(console, '[LogTap]') : () => {};
+
 // ============ Filter Core (inline subset) ============
 function toRegex(s) {
   if (!s || !String(s).trim()) return null;
@@ -255,7 +259,7 @@ async function copyTextToClipboard(tabId, text) {
     });
     return true;
   } catch (e) {
-    console.debug('[LogTap] Clipboard copy failed:', e);
+    log('Clipboard copy failed:', e);
     return false;
   }
 }
@@ -485,7 +489,7 @@ chrome.runtime.onInstalled.addListener(() => {
     });
   });
 
-  console.debug('[LogTap] Extension installed/updated');
+  log('Extension installed/updated');
 });
 
 chrome.contextMenus.onClicked.addListener(async (info) => {
@@ -599,4 +603,4 @@ setInterval(async () => {
   }
 }, 5000);
 
-console.debug('[LogTap] Background service worker initialized (v3.0)');
+log('Background service worker initialized (v3.0)');

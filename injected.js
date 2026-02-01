@@ -523,7 +523,6 @@
     payload: { version: '3.0', logCount: logId }
   });
 
-  // Debug message
-  originals.get('debug')?.call(console, '[LogTap] Console interceptor installed (v3.0)');
+  // Silent in production - no debug output to avoid polluting extension error pages
 
 })();
