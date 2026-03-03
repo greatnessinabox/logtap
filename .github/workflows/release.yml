@@ -40,7 +40,7 @@ jobs:
             -x "icons/*.svg"
 
       - name: Upload release artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: logtap-${{ steps.version.outputs.VERSION }}
           path: logtap-${{ steps.version.outputs.VERSION }}.zip
