@@ -4,7 +4,7 @@
 
 LogTap transforms your browser's console from a firehose of noise into actionable debugging intelligence.
 
-![Chrome Web Store](https://img.shields.io/badge/Chrome-Extension-green?logo=googlechrome)
+![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green?logo=googlechrome)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ## Features
@@ -21,10 +21,18 @@ LogTap transforms your browser's console from a firehose of noise into actionabl
 
 ## Installation
 
-### Chrome Web Store (Recommended)
-Coming soon.
+LogTap is not on the Chrome Web Store. Install it from a GitHub Release.
 
-### Manual Installation (Development)
+### From a release (recommended)
+
+1. Download `logtap-<version>.zip` from the [latest release](https://github.com/greatnessinabox/logtap/releases/latest)
+2. Unzip it into a folder
+3. Open Chrome and navigate to `chrome://extensions`
+4. Enable **Developer mode** (top right toggle)
+5. Click **Load unpacked** and select the unzipped folder
+6. Open DevTools (F12) and find the **LogTap** panel
+
+### From source (development)
 
 1. Clone the repository:
    ```bash
