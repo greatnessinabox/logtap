@@ -1,7 +1,7 @@
 {
   "name": "LogTap Console Formatter",
   "description": "Universal console debugging platform with intelligent filtering, persistence, semantic search, and anomaly detection.",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "manifest_version": 3,
   "permissions": [
     "activeTab",

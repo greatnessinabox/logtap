@@ -5,6 +5,16 @@ All notable changes to LogTap will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.1] - 2026-10-12
+
+### Fixed
+- IndexedDB init no longer hangs: it times out and falls back to in-memory storage
+- LogTap's own debug output no longer shows up in the page console
+
+### Changed
+- README installs from the GitHub Release; the Chrome Web Store claim is gone
+- CI actions bumped: checkout 7, labeler 7, stale 11
+
 ## [3.0.0] - 2026-01-26
 
 ### Added
